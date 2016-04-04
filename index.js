@@ -1,9 +1,9 @@
 var express = require('express');
 var app = express();
 var bodyParser = require('body-parser');
-var config = require('./config.json');
+// var config = require('./config.json');
 
-var twilioClient = require('twilio')(config.accountSid, config.authToken);
+var twilioClient = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 
 var port = process.env.PORT || 1337;
 
@@ -34,8 +34,8 @@ app.get('/auth', function(req, res) {
   }
 
   twilioClient.messages.create({
-    to: config.phoneNumbers.katy,
-    from: config.phoneNumbers.self,
+    to: process.env.PHONE_KATY,
+    from: process.env.PHONE_SELF,
     body: 'NFC auth request from  ' + req.hostname,
   }, function(error, message) {
     if (error) {
