@@ -1,0 +1,25 @@
+{
+  "name": "kmoe",
+  "version": "1.0.0",
+  "description": "moe microservices",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kmoe/kmoe.git"
+  },
+  "engines": {
+    "node": "4.2.4"
+  },
+  "author": "Katy Moe <katy@katy.moe> (http://katy.moe)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/kmoe/kmoe/issues"
+  },
+  "homepage": "https://github.com/kmoe/kmoe#readme",
+  "dependencies": {
+    "express": "^4.13.4"
+  }
+}
