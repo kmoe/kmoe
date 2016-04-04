@@ -1,7 +1,6 @@
 var express = require('express');
 var app = express();
 var bodyParser = require('body-parser');
-// var config = require('./config.json');
 
 var twilioClient = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 
