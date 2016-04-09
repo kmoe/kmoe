@@ -7,7 +7,6 @@ const twilioClient = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.e
 const server = new Hapi.Server();
 
 server.connection({
-  host: 'localhost',
   port: process.env.PORT || 1337
 });
 
