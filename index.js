@@ -1,6 +1,7 @@
 'use strict';
 
 const Hapi = require('hapi');
+const Good = require('good');
 
 const twilioClient = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 
@@ -8,6 +9,30 @@ const server = new Hapi.Server();
 
 server.connection({
   port: process.env.PORT || 1337
+});
+
+server.register({
+  register: Good,
+  options: {
+    reporters: [{
+      reporter: require('good-console'),
+      events: {
+        response: '*',
+        log: '*'
+      }
+    }]
+  }
+}, (err) => {
+  if (err) {
+    throw err; // something bad happened loading the plugin
+  }
+
+  server.start((err) => {
+    if (err) {
+       throw err;
+    }
+    server.log('info', 'Server running at: ' + server.info.uri);
+  });
 });
 
 server.route({
@@ -45,11 +70,4 @@ server.route({
       });
     });
   }
-});
-
-server.start((err) => {
-  if (err) {
-    throw err;
-  }
-  console.log('Server running at:', server.info.uri);
 });

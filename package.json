@@ -20,6 +20,8 @@
   },
   "homepage": "https://github.com/kmoe/kmoe#readme",
   "dependencies": {
+    "good": "^6.6.0",
+    "good-console": "^5.3.1",
     "hapi": "^13.3.0",
     "twilio": "^2.9.1"
   }
