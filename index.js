@@ -1,56 +1,56 @@
-var express = require('express');
-var app = express();
-var bodyParser = require('body-parser');
+'use strict';
 
-var twilioClient = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+const Hapi = require('hapi');
 
-var port = process.env.PORT || 1337;
+const twilioClient = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 
-app.use(bodyParser.json());
+const server = new Hapi.Server();
 
-
-
-app.get('/', function (req, res) {
-  res.send('Hello World!');
+server.connection({
+  host: 'localhost',
+  port: process.env.PORT || 1337
 });
 
-
-var pendingAuthRequest;
-
-// GET /auth
-// sends request to katy to perform auth procedure
-app.get('/auth', function(req, res) {
-  // if (!req.secure) {
-  //   res.send({
-  //     error: 'use httpsplz'
-  //   });
-  // }
-
-  if (req.hostname !== 'localhost') {
-    res.send({
-      error: 'just localhost for now'
-    });
+server.route({
+  method: 'GET',
+  path: '/',
+  handler: (request, reply) => {
+    return reply('hello world');
   }
+});
 
-  twilioClient.messages.create({
-    to: process.env.PHONE_KATY,
-    from: process.env.PHONE_SELF,
-    body: 'NFC auth request from  ' + req.hostname,
-  }, function(error, message) {
-    if (error) {
-      res.send({
-        error: error
+server.route({
+  method: 'GET',
+  path: '/auth',
+  handler: (request, reply) => {
+    if (request.info.hostname !== 'localhost') {
+      return reply({
+        error: 'just localhost for now'
       });
     }
-    console.log('Twilio message sent: ' + message.sid);
-  });
 
-  res.send({
-    error: null,
-    message: 'successful request, katy'
-  });
+    return twilioClient.messages.create({
+      to: process.env.PHONE_KATY,
+      from: process.env.PHONE_SELF,
+      body: 'NFC auth request from  ' + request.hostname,
+    }, (error, message) => {
+      if (error) {
+        return reply({
+          error: error
+        });
+      }
+      console.log('Twilio message sent: ' + message.sid);
+      return reply({
+        error: null,
+        message: 'successful request, katy'
+      });
+    });
+  }
 });
 
-app.listen(port, function () {
-  console.log('Example app listening on port ' + port + '!');
+server.start((err) => {
+  if (err) {
+    throw err;
+  }
+  console.log('Server running at:', server.info.uri);
 });

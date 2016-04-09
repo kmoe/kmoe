@@ -1,0 +1,52 @@
+var app = require('koa')();
+var twilioClient = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+var router = require('koa-router')();
+
+var port = process.env.PORT || 1337;
+
+//MIDDLEWARE
+
+// logger
+app.use(function *(next){
+  var start = new Date;
+  yield next;
+  var ms = new Date - start;
+  console.log('%s %s - %s ms', this.method, this.url, ms);
+});
+
+//ROUTES
+
+router.get('/', function *(next) {
+  this.body = 'base path';
+  yield next;
+});
+
+router.get('/auth', function *(next) {
+  this.body = {};
+
+  if (this.hostname !== 'localhost') {
+    this.body.error = 'just localhost for now';
+    yield next;
+  }
+
+  twilioClient.messages.create({
+    to: process.env.PHONE_KATY,
+    from: process.env.PHONE_SELF,
+    body: 'NFC auth request from  ' + this.hostname,
+  }, function(error, message) {
+    if (error) {
+      console.error(error);
+      this.body.error = error;
+      return;
+    }
+    console.log('Twilio message sent: ' + message.sid);
+  }.bind(this));
+
+  this.body.message = 'request complete';
+});
+
+app
+  .use(router.routes())
+  .use(router.allowedMethods());
+
+app.listen(3000);
