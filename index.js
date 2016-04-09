@@ -12,7 +12,7 @@ server.connection({
   port: process.env.PORT || 1337
 });
 
-var options = {
+const options = {
   reporters: [
     {
       reporter: require('good-console'),
