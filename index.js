@@ -2,6 +2,7 @@
 
 const Hapi = require('hapi');
 const Good = require('good');
+const GoodLoggly = require('good-loggly');
 
 const twilioClient = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 
@@ -11,17 +12,37 @@ server.connection({
   port: process.env.PORT || 1337
 });
 
-server.register({
-  register: Good,
-  options: {
-    reporters: [{
+var options = {
+  reporters: [
+    {
       reporter: require('good-console'),
       events: {
         response: '*',
-        log: '*'
+        log: '*',
+        request: '*'
       }
-    }]
-  }
+    },
+    {
+      reporter: GoodLoggly,
+      events: {
+        response: '*',
+        log: '*',
+        request: '*'
+      },
+      config: {
+        token: process.env.LOGGLY_TOKEN,
+        subdomain: process.env.LOGGLY_SUBDOMAIN,
+        name: 'kmoe',
+        hostname: 'kmoe.heroku.com',
+        tags: ['good-loggly']
+      }
+    }
+  ]
+};
+
+server.register({
+  register: Good,
+  options
 }, (err) => {
   if (err) {
     throw err; // something bad happened loading the plugin
@@ -39,6 +60,7 @@ server.route({
   method: 'GET',
   path: '/',
   handler: (request, reply) => {
+    server.log('info', 'base route');
     return reply('hello world');
   }
 });
