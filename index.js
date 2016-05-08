@@ -2,6 +2,7 @@
 
 const Hapi = require('hapi');
 const Good = require('good');
+const notp = require('notp');
 const GoodLoggly = require('good-loggly');
 
 const twilioClient = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
@@ -75,21 +76,44 @@ server.route({
       });
     }
 
-    return twilioClient.messages.create({
-      to: process.env.PHONE_KATY,
-      from: process.env.PHONE_SELF,
-      body: 'NFC auth request from  ' + request.hostname,
-    }, (error, message) => {
-      if (error) {
-        return reply({
-          error: error
-        });
-      }
-      console.log('Twilio message sent: ' + message.sid);
-      return reply({
-        error: null,
-        message: 'successful request, katy'
-      });
-    });
+    return reply('no');
+
+    // return twilioClient.messages.create({
+    //   to: process.env.PHONE_KATY,
+    //   from: process.env.PHONE_SELF,
+    //   body: 'NFC auth request from  ' + request.hostname,
+    // }, (error, message) => {
+    //   if (error) {
+    //     return reply({
+    //       error: error
+    //     });
+    //   }
+    //   console.log('Twilio message sent: ' + message.sid);
+    //   return reply({
+    //     error: null,
+    //     message: 'successful request, katy'
+    //   });
+    // });
   }
 });
+
+server.route({
+  method: 'POST',
+  path: '/auth',
+  handler: (request, reply) => {
+    console.log(request.payload);
+
+    if (!request.payload) {
+      return reply('well shit, you forgot the payload');
+    }
+
+    if (notp.totp.verify(request.payload.token, process.env.TOTP_KEY)) {
+      console.log('success verifying totp');
+      return reply('SUCCESSSSSSS');
+    } else {
+      console.log('nope');
+      return reply('auth failed :(');
+    }
+  }
+});
+
