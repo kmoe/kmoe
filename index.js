@@ -138,11 +138,11 @@ server.route({
     //include time limit
 
     emitter.on('auth_failure', () => {
-      reply('auth failed');
+      return reply('auth failed');
     });
 
     emitter.on('auth_success', () => {
-      reply('auth succeeded!!!!!!!1');
+      return reply('auth succeeded!!!!!!!1');
     });
   }
 });
