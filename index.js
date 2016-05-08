@@ -117,3 +117,15 @@ server.route({
   }
 });
 
+server.route({
+  method: 'GET',
+  path: '/verify',
+  handler: (request, reply) => {
+    server.log('verification request from ', request.info.hostname);
+
+    //send text to katy
+    
+    //reply
+    reply('test reply');
+  }
+});
