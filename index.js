@@ -7,6 +7,9 @@ const GoodLoggly = require('good-loggly');
 
 const twilioClient = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 
+const EventEmitter = require('events');
+const emitter = new EventEmitter();
+
 const server = new Hapi.Server();
 
 server.connection({
@@ -104,14 +107,17 @@ server.route({
     console.log(request.payload);
 
     if (!request.payload) {
+      emitter.emit('auth_failure');
       return reply('well shit, you forgot the payload');
     }
 
     if (notp.totp.verify(request.payload.token, process.env.TOTP_KEY)) {
       console.log('success verifying totp');
+      emitter.emit('auth_success');
       return reply('SUCCESSSSSSS');
     } else {
       console.log('nope');
+      emitter.emit('auth_failure');
       return reply('auth failed :(');
     }
   }
@@ -120,12 +126,23 @@ server.route({
 server.route({
   method: 'GET',
   path: '/verify',
+  config: {
+    timeout: {
+      server: 100000
+    },
+  },
   handler: (request, reply) => {
     server.log('verification request from ', request.info.hostname);
 
     //send text to katy
-    
-    //reply
-    reply('test reply');
+    //include time limit
+
+    emitter.on('auth_failure', () => {
+      reply('auth failed');
+    });
+
+    emitter.on('auth_success', () => {
+      reply('auth succeeded!!!!!!!1');
+    });
   }
 });
