@@ -4,7 +4,6 @@ const Hapi = require('hapi');
 const Good = require('good');
 const notp = require('notp');
 const GoodLoggly = require('good-loggly');
-
 const twilioClient = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 
 const EventEmitter = require('events');
@@ -100,15 +99,11 @@ server.route({
   }
 });
 
-let pendingAuth;
-
 server.route({
   method: 'POST',
   path: '/auth',
   handler: (request, reply) => {
     console.log(request.payload);
-
-    pendingAuth = true;
 
     if (!request.payload) {
       emitter.emit('auth_failure');
@@ -116,11 +111,11 @@ server.route({
     }
 
     if (notp.totp.verify(request.payload.token, process.env.TOTP_KEY)) {
-      console.log('success verifying totp');
+      server.log('success verifying totp');
       emitter.emit('auth_success');
       return reply('SUCCESSSSSSS');
     } else {
-      console.log('nope');
+      server.log('nope');
       emitter.emit('auth_failure');
       return reply('auth failed :(');
     }
@@ -132,7 +127,7 @@ server.route({
   path: '/verify',
   config: {
     timeout: {
-      server: 100000,
+      server: 20000,
     },
   },
   handler: (request, reply) => {
@@ -141,19 +136,20 @@ server.route({
     //send text to katy
     //include time limit
 
-    let response = reply('timeout').hold();
+    let responded;
 
     emitter.on('auth_failure', () => {
-      response = reply('auth failed').hold();
+      if (!responded) {
+        responded = true;
+        reply('auth failed');
+      }
     });
 
     emitter.on('auth_success', () => {
-      response = reply('auth succeeded!!!!!!!1').hold();
+      if (!responded) {
+        responded = true;
+        reply('auth succeeded!!');
+      }
     });
-
-    if (pendingAuth) {
-      pendingAuth = false;
-      return response.send();
-    }
   }
 });
