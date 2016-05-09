@@ -113,7 +113,7 @@ server.route({
     if (notp.totp.verify(request.payload.token, process.env.TOTP_KEY)) {
       server.log('success verifying totp');
       emitter.emit('auth_success');
-      return reply('SUCCESSSSSSS');
+      return reply('auth success');
     } else {
       server.log('nope');
       emitter.emit('auth_failure');
