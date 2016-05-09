@@ -100,11 +100,15 @@ server.route({
   }
 });
 
+let pendingAuth;
+
 server.route({
   method: 'POST',
   path: '/auth',
   handler: (request, reply) => {
     console.log(request.payload);
+
+    pendingAuth = true;
 
     if (!request.payload) {
       emitter.emit('auth_failure');
@@ -128,7 +132,7 @@ server.route({
   path: '/verify',
   config: {
     timeout: {
-      server: 100000
+      server: 100000,
     },
   },
   handler: (request, reply) => {
@@ -137,12 +141,19 @@ server.route({
     //send text to katy
     //include time limit
 
+    let response = reply('timeout').hold();
+
     emitter.on('auth_failure', () => {
-      return reply('auth failed');
+      response = reply('auth failed').hold();
     });
 
     emitter.on('auth_success', () => {
-      return reply('auth succeeded!!!!!!!1');
+      response = reply('auth succeeded!!!!!!!1').hold();
     });
+
+    if (pendingAuth) {
+      pendingAuth = false;
+      return response.send();
+    }
   }
 });
