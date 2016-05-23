@@ -68,6 +68,25 @@ server.route({
   }
 });
 
+let latestNfcMessage = 'APIs for Cyborgs';
+
+server.route({
+  method: 'GET',
+  path: '/nfc',
+  handler: (request, reply) => {
+    return reply(latestNfcMessage);
+  }
+});
+
+server.route({
+  method: 'POST',
+  path: '/nfc',
+  handler: (request, reply) => {
+    latestNfcMessage = '' + request.payload;
+    return reply('thanks!');
+  }
+});
+
 server.route({
   method: 'GET',
   path: '/auth',
