@@ -2,6 +2,7 @@
 
 const Hapi = require('hapi');
 const Good = require('good');
+const Boom = require('boom');
 const notp = require('notp');
 const GoodLoggly = require('good-loggly');
 const twilioClient = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
@@ -82,6 +83,18 @@ server.route({
   method: 'POST',
   path: '/nfc',
   handler: (request, reply) => {
+    if (!request.payload) {
+      return reply(Boom.badRequest('please provide a plaintext request body'));
+    }
+
+    if (request.payload.length < 2) {
+      return reply(Boom.badRequest('request body too short'));
+    }
+
+    if (typeof request.payload !== 'string') {
+      return reply(Boom.badRequest('request body must be a string'));
+    }
+
     latestNfcMessage = '' + request.payload;
     return reply('thanks!');
   }
@@ -171,4 +184,12 @@ server.route({
       }
     });
   }
+});
+
+server.route({
+  method: 'GET',
+  path: '/500',
+  handler: (request, reply) => {
+    return reply(Boom.internal('internal error'));
+  },
 });

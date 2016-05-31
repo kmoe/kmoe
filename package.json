@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/kmoe/kmoe#readme",
   "dependencies": {
+    "boom": "^3.2.1",
     "good": "^6.6.0",
     "good-console": "^5.3.1",
     "good-loggly": "^2.0.0",
